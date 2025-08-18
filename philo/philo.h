@@ -33,7 +33,7 @@ typedef struct s_data
 
 int	ft_atoi(char *str);
 void    *philo_routine(void *tmp);
-void philo_cycle(t_data *data);
+void philo_cycle(t_philo *philo);
 void    single_philo(t_data *data, int id);
 void    print_status(t_data *data, int id, const char *status);
 

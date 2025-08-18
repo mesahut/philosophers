@@ -130,7 +130,8 @@ void    init_philos(t_data *data)
         data->philos[i].right_fork = (i + 1) % data->num_philos;
         data->philos[i].eat_count = 0;
         data->philos[i].last_meal_time = 0;
-        pthread_create(&data->philos[i].thread, NULL, philo_routine, (void *)data);
+        data->philos[i].data = data;
+        pthread_create(&data->philos[i].thread, NULL, philo_routine, (void *)&data->philos[i]);
         i++;
     }
     pthread_create(&data->monitor, NULL, monitor_routine, (void *)data);
@@ -162,30 +163,30 @@ void    init_mutexes(t_data *data)
 void    *philo_routine(void  *tmp)
 {
     
-    t_data *data;
+    t_philo *philo;
 
-    data = (t_data *)tmp;
-    pthread_mutex_lock(&data->eat_mutex);
-    data->start_time = get_time();
-    pthread_mutex_unlock(&data->eat_mutex);
+    philo = (t_philo *)tmp;
+    pthread_mutex_lock(&philo->data->print_mutex);
+    philo->data->start_time = get_time();
+    pthread_mutex_unlock(&philo->data->print_mutex);
     
-    if(data->num_philos == 1)
+    if(philo->data->num_philos == 1)
     {
-        single_philo(data, 0);
+        single_philo(philo->data, 0);
         return (0);
     }
+    if(philo->id % 2 == 1)
+        ft_usleep(philo->data, 100);
     while (1)
     {
-        pthread_mutex_lock(&data->eat_mutex);
-        // max eat count control
-        if(data->is_dead == 1 || data->max_eat_count == 0)
+        pthread_mutex_lock(&philo->data->eat_mutex);
+        if(philo->data->is_dead == 1 || (philo->eat_count == philo->data->max_eat_count))
         {
-            pthread_mutex_unlock(&data->eat_mutex);
+            pthread_mutex_unlock(&philo->data->eat_mutex);
             break;
         }
-
-        pthread_mutex_unlock(&data->eat_mutex);
-        philo_cycle(data);
+        pthread_mutex_unlock(&philo->data->eat_mutex);
+        philo_cycle(philo);
     }
     return (0);
 }
@@ -207,50 +208,49 @@ void    single_philo(t_data *data, int id)
     pthread_mutex_unlock(&data->forks[id]);
 }
 
-void    eat(t_data *data)
+void    eat(t_philo *philo)
 {
-    int id = data->philos->id - 1;
+    int id = philo->id - 1;
 
-    pthread_mutex_lock(&data->forks[id]);
-    print_status(data, id + 1, "has taken a fork");
-    pthread_mutex_lock(&data->forks[data->philos[id].right_fork]);
-    print_status(data, id + 1, "has taken a fork");
-    
-    pthread_mutex_lock(&data->eat_mutex);
-    data->philos[id].last_meal_time = get_time();
-    data->philos[id].eat_count++;
-    pthread_mutex_unlock(&data->eat_mutex);
-    ft_usleep(data, data->time_to_eat);
-    print_status(data, id + 1, "is eating");
-    pthread_mutex_unlock(&data->forks[data->philos[id].right_fork]);
-    pthread_mutex_unlock(&data->forks[id]);
+    pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
+    print_status(philo->data, id + 1, "has taken a fork");
+    pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
+    print_status(philo->data, id + 1, "has taken a fork");
+    pthread_mutex_lock(&philo->data->eat_mutex);
+    philo->last_meal_time = get_time();
+    philo->eat_count++;
+    pthread_mutex_unlock(&philo->data->eat_mutex);
+    ft_usleep(philo->data, philo->data->time_to_eat);
+    print_status(philo->data, id + 1, "is eating");
+    pthread_mutex_unlock(&philo->data->forks[philo->right_fork]);
+    pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
 }
 
-void uyku(t_data *data)
+void uyku(t_philo *philo)
 {
     printf("--------------------------\n");
-    ft_usleep(data, data->time_to_sleep);
-    print_status(data, data->philos->id, "is sleeping");
+    ft_usleep(philo->data, philo->data->time_to_sleep);
+    print_status(philo->data, philo->id, "is sleeping");
 }
 
-void    think(t_data *data)
+void    think(t_philo *philo)
 {
-    print_status(data, data->philos->id, "is thinking");
+    print_status(philo->data, philo->id, "is thinking");
 }
 
-void philo_cycle(t_data *data)
+void philo_cycle(t_philo *philo)
 {
     while (1)
     {
-        if(data->philos->eat_count == data->max_eat_count)
+        if(philo->eat_count == philo->data->max_eat_count)
             break;
-        pthread_mutex_lock(&data->dead_mutex);
-        if(data->is_dead)
+        pthread_mutex_lock(&philo->data->dead_mutex);
+        if(philo->data->is_dead)
             break;
-        pthread_mutex_unlock(&data->dead_mutex);
-        eat(data);
-        uyku(data);
-        think(data);
+        pthread_mutex_unlock(&philo->data->dead_mutex);
+        eat(philo);
+        uyku(philo);
+        think(philo);
     }
 }
 
