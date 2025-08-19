@@ -9,14 +9,16 @@ void    clean_exit(t_data *data, char *commit)
 
 }
 
-long long   get_time()
+long long   get_time(t_data *data)
 {
+    pthread_mutex_lock(&data->time_mutex);
     long long s_time;
     long long ms_time;
     struct timeval tv;
     gettimeofday(&tv, NULL);
     ms_time = (long long)tv.tv_usec;
     s_time = (long long)tv.tv_sec;
+    pthread_mutex_unlock(&data->time_mutex);
     return (s_time * 1000 + ms_time / 1000);
 }
 
@@ -24,8 +26,8 @@ void    ft_usleep(t_data *data,int time)
 {
     long long now;
 
-    now = get_time();
-    while(get_time() < (now + time))
+    now = get_time(data);
+    while(get_time(data) < (now + time))
         usleep(100);
 }
 
@@ -108,7 +110,7 @@ void    *monitor_routine(void *tmp)
     t_philo *philo;
     int     i;
     long long now;
-    long long qwe;
+    long long diff;
 
     philo = (t_philo *)tmp;
     i = 0;
@@ -116,10 +118,12 @@ void    *monitor_routine(void *tmp)
     {
         if(i == philo->data->num_philos - 1)
             i = 0;
+        now = get_time(philo->data);
+        pthread_mutex_lock(&philo->data->eat_mutex);
+        diff = (now - (philo[i].last_meal_time));
+        pthread_mutex_unlock(&philo->data->eat_mutex);
         pthread_mutex_lock(&philo->data->dead_mutex);
-        now = get_time();
-        qwe = (now - (philo[i].last_meal_time));
-        if(qwe > philo->data->time_to_die)
+        if(diff > philo->data->time_to_die)
         {
             print_status(philo, philo->data, philo->id, "is died");
             philo->data->is_dead = 1;
@@ -144,7 +148,7 @@ void    init_philos(t_data *data)
         data->philos[i].left_fork = i;
         data->philos[i].right_fork = (i + 1) % data->num_philos;
         data->philos[i].eat_count = 0;
-        data->philos[i].last_meal_time = get_time();
+        data->philos[i].last_meal_time = get_time(data);
         data->philos[i].data = data;
         pthread_create(&data->philos[i].thread, NULL, philo_routine, (void *)&data->philos[i]);
         i++;
@@ -180,10 +184,10 @@ void    *philo_routine(void  *tmp)
     
     t_philo *philo;
 
-    //monitor trit te flag değiştir en son oluştuğu için bütün
+    //monitor trit te flag değiştir en son oluştuğu için bütün philolar
     philo = (t_philo *)tmp;
     pthread_mutex_lock(&philo->data->print_mutex);
-    philo->data->start_time = get_time();
+    philo->data->start_time = get_time(philo->data);
     pthread_mutex_unlock(&philo->data->print_mutex);
     
     if(philo->data->num_philos == 1)
@@ -213,7 +217,7 @@ void    print_status(t_philo *philo, t_data *data, int id, const char *status)
     if(data->is_dead == 1 || philo->eat_count == data->max_eat_count)
         return ;
     pthread_mutex_lock(&data->print_mutex);
-    now = get_time();
+    now = get_time(data);
     printf("%d %lld %s\n", id,(now - data->start_time), status);
     pthread_mutex_unlock(&data->print_mutex);
 }
@@ -235,14 +239,14 @@ int eat(t_philo *philo)
     print_status(philo, philo->data, id + 1, "has taken a fork");
     pthread_mutex_lock(&philo->data->forks[philo->right_fork]);
     print_status(philo, philo->data, id + 1, "has taken a fork");
+    pthread_mutex_unlock(&philo->data->forks[philo->right_fork]);
+    pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
     pthread_mutex_lock(&philo->data->eat_mutex);
-    philo->last_meal_time = get_time();
+    philo->last_meal_time = get_time(philo->data);
     philo->eat_count++;
     pthread_mutex_unlock(&philo->data->eat_mutex);
     print_status(philo, philo->data, id + 1, "is eating");
     ft_usleep(philo->data, philo->data->time_to_eat);
-    pthread_mutex_unlock(&philo->data->forks[philo->right_fork]);
-    pthread_mutex_unlock(&philo->data->forks[philo->left_fork]);
     return (0);
 }
 
@@ -261,7 +265,7 @@ int think(t_philo *philo)
     if (dead_check(philo) == 1)
         return (1);
     print_status(philo, philo->data, philo->id, "is thinking");
-    //ft_usleep(philo->data ,((philo->data->time_to_eat + philo->data->time_to_sleep) - philo->data->time_to_die) / 2);
+    ft_usleep(philo->data ,(philo->data->time_to_die - (philo->data->time_to_eat + philo->data->time_to_sleep)) / 2);
     return (0);
 }
 
