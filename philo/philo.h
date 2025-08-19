@@ -31,10 +31,10 @@ typedef struct s_data
     t_philo             *philos;
 }t_data;
 
-int	ft_atoi(char *str);
+int     ft_atoi(char *str);
 void    *philo_routine(void *tmp);
-void philo_cycle(t_philo *philo);
-void    single_philo(t_data *data, int id);
-void    print_status(t_data *data, int id, const char *status);
+int     philo_cycle(t_philo *philo);
+void    single_philo(t_philo *philo, int id);
+void    print_status(t_philo *philo, t_data *data, int id, const char *status);
 
 #endif
