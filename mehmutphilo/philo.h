@@ -6,7 +6,7 @@
 /*   By: mayilmaz <mayilmaz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/22 08:07:00 by mayilmaz          #+#    #+#             */
-/*   Updated: 2025/08/22 08:07:03 by mayilmaz         ###   ########.fr       */
+/*   Updated: 2025/08/22 17:12:12 by mayilmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ typedef struct s_philo
 typedef struct s_data
 {
 	int				num_philos;
+	int				eat_flag;
 	int				time_to_eat;
 	int				time_to_die;
 	int				time_to_sleep;
@@ -47,10 +48,26 @@ typedef struct s_data
 	t_philo			*philos;
 }					t_data;
 
-int					ft_atoi(char *str);
-void				*philo_routine(void *tmp);
-int					philo_cycle(t_philo *philo);
-void				single_philo(t_philo *philo, int id);
-void				print_status(t_philo *philo, t_data *data, int id,
-						const char *status);
+int			ft_atoi(char *str);
+int			eat(t_philo *philo);
+int			uyku(t_philo *philo);
+int			think(t_philo *philo);
+long long	get_time(t_data *data);
+void		philo_join(t_data *data);
+void		*philo_routine(void *tmp);
+void		init_philos(t_data *data);
+int			init_mutexes(t_data *data);
+int			dead_check(t_philo *philo);
+void		*monitor_routine(void *tmp);
+int			philo_cycle(t_philo *philo);
+int			eat_count_check(t_philo *philo);
+void		ft_usleep(t_data *data, int time);
+void		print_dead(t_philo *philo, int i);
+int			check_arguments(int ac, char **av);
+void		free_forks(t_data *data, int count);
+void		single_philo(t_philo *philo, int id);
+int			init_arguments(int ac, char **av, t_data *data);
+void		clean_exit(t_data *data, char *commit, int code);
+void		print_status(t_philo *philo, t_data *data,
+				int id, const char *status);
 #endif

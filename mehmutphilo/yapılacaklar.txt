@@ -1,9 +1,0 @@
-parser -> initializerdata/thread -> 
-
-precise sleep -> usleep;
-safe_exit -> func 
-
-thread -> spinlock while();
-
-
-datayı yollayıp ordan philoya ulaşarak yapmaya çalıştım ama doğru çalıştıramadığım için direkt philo struct ını göndermeyi deneyecem
