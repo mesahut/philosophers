@@ -6,7 +6,7 @@
 /*   By: mayilmaz <mayilmaz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/22 16:48:08 by mayilmaz          #+#    #+#             */
-/*   Updated: 2025/08/22 17:12:33 by mayilmaz         ###   ########.fr       */
+/*   Updated: 2025/08/24 00:29:07 by mayilmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,6 @@ int	fork_lock(t_philo *philo, int id)
 		pthread_mutex_lock(&philo->data->forks[philo->left_fork]);
 		print_status(philo, philo->data, id + 1, "has taken a fork");
 	}
-	if (dead_check(philo) == 1)
-	{
-		fork_unlock(philo, id);
-		return (1);
-	}
 	return (0);
 }
 
@@ -59,11 +54,6 @@ int	eat(t_philo *philo)
 		return (1);
 	if (fork_lock(philo, id) == 1)
 		return (1);
-	if (dead_check(philo) == 1)
-	{
-		fork_unlock(philo, id);
-		return (1);
-	}
 	pthread_mutex_lock(&philo->count_mutex);
 	philo->last_meal_time = get_time(philo->data);
 	pthread_mutex_unlock(&philo->count_mutex);
@@ -82,8 +72,6 @@ int	uyku(t_philo *philo)
 		return (1);
 	print_status(philo, philo->data, philo->id, "is sleeping");
 	ft_usleep(philo->data, philo->data->time_to_sleep);
-	if (dead_check(philo) == 1)
-		return (1);
 	return (0);
 }
 

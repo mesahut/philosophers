@@ -1,0 +1,18 @@
+int	think(t_philo *philo)
+{
+	int        time;
+	long long  now;
+	long long  since;
+
+	if (dead_check(philo) == 1)
+		return (1);
+	now = get_time(philo->data);
+	pthread_mutex_lock(&philo->count_mutex);
+	since = now - philo->last_meal_time;
+	pthread_mutex_unlock(&philo->count_mutex);
+	time = (philo->data->time_to_die - (int)since - philo->data->time_to_eat) / 2;
+	print_status(philo, philo->data, philo->id, "is thinking");
+	if (time > 0)
+		ft_usleep(philo->data, time);
+	return (0);
+}

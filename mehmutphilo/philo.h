@@ -6,7 +6,7 @@
 /*   By: mayilmaz <mayilmaz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/22 08:07:00 by mayilmaz          #+#    #+#             */
-/*   Updated: 2025/08/22 17:12:12 by mayilmaz         ###   ########.fr       */
+/*   Updated: 2025/08/23 14:05:49 by mayilmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define PHILO_H
 
 # include <pthread.h>
+# include <stdio.h>
 
 typedef struct s_philo
 {
@@ -62,7 +63,7 @@ void		*monitor_routine(void *tmp);
 int			philo_cycle(t_philo *philo);
 int			eat_count_check(t_philo *philo);
 void		ft_usleep(t_data *data, int time);
-void		print_dead(t_philo *philo, int i);
+int			print_dead(t_philo *philo, int i);
 int			check_arguments(int ac, char **av);
 void		free_forks(t_data *data, int count);
 void		single_philo(t_philo *philo, int id);

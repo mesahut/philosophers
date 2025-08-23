@@ -6,7 +6,7 @@
 /*   By: mayilmaz <mayilmaz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/22 16:44:12 by mayilmaz          #+#    #+#             */
-/*   Updated: 2025/08/22 17:14:26 by mayilmaz         ###   ########.fr       */
+/*   Updated: 2025/08/24 00:41:20 by mayilmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ void	*monitor_routine(void *tmp)
 	philo = (t_philo *)tmp;
 	i = 0;
 	pthread_mutex_lock(&philo->data->start_check_mutex);
-	philo->data->start_check = 1;
 	philo->data->start_time = get_time(philo->data);
+	philo->data->start_check = 1;
 	pthread_mutex_unlock(&philo->data->start_check_mutex);
 	while (!philo->data->is_dead)
 	{
@@ -30,7 +30,8 @@ void	*monitor_routine(void *tmp)
 		if (philo->data->max_eat_count != -1)
 			if (eat_count_check(philo) == 0)
 				return (0);
-		print_dead(philo, i);
+		if (print_dead(philo, i) == 1)
+			return (0);
 		i++;
 	}
 	return (0);
@@ -65,9 +66,9 @@ void	*philo_routine(void *tmp)
 
 	philo = (t_philo *)tmp;
 	start_all_philo(philo);
-	pthread_mutex_lock(&philo->data->print_mutex);
-	philo->data->start_time = get_time(philo->data);
-	pthread_mutex_unlock(&philo->data->print_mutex);
+	pthread_mutex_lock(&philo->count_mutex);
+	philo->last_meal_time = philo->data->start_time;
+	pthread_mutex_unlock(&philo->count_mutex);
 	if (philo->data->num_philos == 1)
 	{
 		single_philo(philo, 0);
@@ -83,6 +84,7 @@ int	philo_cycle(t_philo *philo)
 {
 	while (1)
 	{
+		// printf("----------------------------------%d\n", philo->data->is_dead);
 		if (eat(philo) == 1)
 			return (1);
 		pthread_mutex_lock(&philo->eat_mutex);

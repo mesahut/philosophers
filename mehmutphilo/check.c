@@ -6,7 +6,7 @@
 /*   By: mayilmaz <mayilmaz@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/22 07:47:49 by mayilmaz          #+#    #+#             */
-/*   Updated: 2025/08/22 17:12:51 by mayilmaz         ###   ########.fr       */
+/*   Updated: 2025/08/23 13:38:19 by mayilmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,14 +86,12 @@ int	check_arguments(int ac, char **av)
 
 int	dead_check(t_philo *philo)
 {
+	int	dead;
+
 	pthread_mutex_lock(&philo->data->dead_mutex);
-	if (philo->data->is_dead == 1)
-	{
-		pthread_mutex_unlock(&philo->data->dead_mutex);
-		return (1);
-	}
+	dead = philo->data->is_dead;
 	pthread_mutex_unlock(&philo->data->dead_mutex);
-	return (0);
+	return (dead);
 }
 
 int	eat_count_check(t_philo *philo)
